@@ -9,82 +9,70 @@ github 웹에서 추가한 내용입니다
 오늘의 학습 목표: Git 협업 이해
 오늘의 학습 목표: 작업자 A의 Git 협업 실습
 
+# Git 협업 실습 Sequence Diagram
 
-# README.md 작성 및 Markdown 활용 실습
-
-## 실습 과정 시퀀스 다이어그램
+## 1단계. 충돌 없는 협업
 
 ```mermaid
 sequenceDiagram
-    autonumber
+    actor A as 작업자 A
+    participant GitHub as GitHub origin/main
+    actor B as 작업자 B
 
-    actor 사용자
-    participant README as README.md
-    participant MD as Markdown
-    participant Emoji as 이모지
-    participant GitHub as GitHub
+    A->>A: worker-a.md 생성
+    A->>A: git add worker-a.md
+    A->>A: git commit -m "A: 작업자 A 문서 추가"
+    A->>GitHub: git push
 
-    Note over 사용자,README: 1. README.md 파일 작성
+    B->>GitHub: git fetch origin
+    GitHub-->>B: origin/main 갱신
+    B->>B: git log --oneline main..origin/main
+    B->>B: git merge origin/main
 
-    사용자->>README: README.md 생성
-    사용자->>README: 프로젝트 목적 작성
-    사용자->>README: 주요 기능 작성
-    사용자->>README: 설치 방법 작성
-    사용자->>README: 사용 방법 작성
-    README-->>사용자: 프로젝트 안내 문서 완성
+    B->>B: worker-b.md 생성
+    B->>B: git add worker-b.md
+    B->>B: git commit -m "B: 작업자 B 문서 추가"
+    B->>GitHub: git push
 
-    Note over 사용자,MD: 2. Markdown 기본 문법 적용
+    A->>GitHub: git fetch origin
+    GitHub-->>A: origin/main 갱신
+    A->>A: git log --oneline main..origin/main
+    A->>A: git merge origin/main
+```
 
-    사용자->>MD: 제목 문법 작성
-    MD-->>README: 제목 적용
+## 2단계. Merge 충돌 및 해결
 
-    사용자->>MD: 강조 문법 작성
-    MD-->>README: 굵게 / 기울임 / 취소선 / 코드 적용
+```mermaid
+sequenceDiagram
+    actor A as 작업자 A
+    participant GitHub as GitHub origin/main
+    actor B as 작업자 B
 
-    사용자->>MD: 목록 문법 작성
-    MD-->>README: 순서 있는 목록 / 순서 없는 목록 적용
+    A->>A: README.md 수정
+    A->>A: git add README.md
+    A->>A: git commit -m "A: README 학습 목표 수정"
+    A->>GitHub: git push
 
-    사용자->>MD: 링크 작성
-    MD-->>README: 링크 적용
+    B->>B: README.md 같은 문장 수정
+    B->>B: git add README.md
+    B->>B: git commit -m "B: README 학습 목표 수정"
+    B->>GitHub: git push
+    GitHub-->>B: rejected - fetch first
 
-    사용자->>MD: 이미지 작성
-    MD-->>README: 이미지 적용
+    B->>GitHub: git fetch origin
+    GitHub-->>B: origin/main 갱신
+    B->>B: git log --oneline --graph --all --decorate
+    B->>B: git merge origin/main
+    Note over B: README.md CONFLICT
 
-    사용자->>MD: 인용문 작성
-    MD-->>README: 인용문 적용
+    B->>B: README.md 충돌 내용 수정
+    B->>B: git add README.md
+    B->>B: git commit -m "B: A의 변경과 README 충돌 해결"
+    B->>GitHub: git push
 
-    사용자->>MD: 코드 블록 작성
-    MD-->>README: 코드 블록 적용
-
-    Note over 사용자,Emoji: 3. README.md에 이모지 활용
-
-    사용자->>Emoji: 이모지 선택
-    Emoji-->>사용자: 사용할 이모지 제공
-
-    사용자->>README: 이모지 직접 입력
-    사용자->>README: 이모지 단축코드 사용
-    사용자->>README: 운영체제 단축키로 이모지 입력
-
-    README-->>사용자: 시각적으로 구분된 문서 완성
-
-    Note over 사용자,README: 4. 이모지를 활용한 README 구성
-
-    사용자->>README: 섹션 제목에 이모지 추가
-    사용자->>README: 주요 기능에 이모지 추가
-    사용자->>README: 설치 과정에 이모지 추가
-    사용자->>README: 문서 및 안내 영역에 이모지 추가
-
-    README-->>사용자: 가독성 높은 README.md 완성
-
-    Note over 사용자,GitHub: 5. GitHub에서 README.md 활용
-
-    사용자->>GitHub: README.md 저장소에 업로드
-    GitHub->>README: README.md 내용 읽기
-    README-->>GitHub: Markdown 문서 구조 전달
-    GitHub->>GitHub: Markdown 렌더링
-    GitHub->>GitHub: 이모지 렌더링
-    GitHub-->>사용자: 완성된 README.md 화면 표시
-
-    Note over 사용자,GitHub: Markdown과 이모지를 활용한 프로젝트 README 완성
-    사용자->>GitHub: README.md 업로드
-    GitHub-->>사용자: 프로젝트 문서 표시
+    A->>GitHub: git fetch origin
+    GitHub-->>A: origin/main 갱신
+    A->>A: git log --oneline main..origin/main
+    A->>A: git merge origin/main
+    A->>A: cat README.md
+```
